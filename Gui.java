@@ -26,7 +26,7 @@ public class Gui {
     private final int levels=8;
     private int counter;
     private int stop;
-    private boolean autoplay=true;
+    private boolean autoplay=false;
     public Gui(BinomialHeap x){
         this.x=x;
         this.counter=0;
