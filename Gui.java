@@ -26,7 +26,8 @@ public class Gui {
     private final int levels=8;
     private int counter;
     private int stop;
-    private boolean autoplay=false;
+    private boolean autoplay=true;
+    private final int numofplays=7;
     public Gui(BinomialHeap x){
         this.x=x;
         this.counter=0;
@@ -59,34 +60,9 @@ public class Gui {
 
     public static void main(String[] args){
         BinomialHeap x=new BinomialHeap();
-       /*int count=0;
-       for(int i=1;i<11;i++){
-           count=0;
-           for(int j=0;j<10000*i;j++){
-               int insert =(int)(1000000*Math.random())+1;
-               while(x.search(insert)!=null){
-                   insert =(int)(1000000*Math.random())+1;
-               }
-               count+=x.insert(insert," s");
-           }
-           System.out.println("insert i:"+i+" is: "+(double)count/(10000*i)+" size "+x.size());
-           count=0;
-           for(int j=0;j<10000*i;j++){
-               if(x.empty()){
-                   System.out.println("empty");
-               }else {
-                   count += x.delete(x.getRoot().getKey());
-               }
-           }
-           System.out.println("delete i:"+i+" is: "+(double)count/(10000*i));
-       }*/
-
-        //x.insert(1);
-        //for(int i=0;i<15;i++){
-        //    x.insert((int)(10000*Math.random())+1," s");
-        //}
         HeapNode root = x.head;
         Gui swingControlDemo = new Gui(x);
+
 
     }
 
@@ -136,7 +112,6 @@ public class Gui {
     }
 
     public void update() {
-
         HeapNode[][] nodes=new HeapNode[15][];
         for (int i = 0; i < levels &&panels!=null; i++) {
             if(main!=null && panels[i]!=null) {
@@ -159,7 +134,7 @@ public class Gui {
             nodes[0][p] = h;
             panels[0].add(nodetoJButton(h,choosecolor(p)));
 
-            System.out.print("began h1:"+h.key+" \n");
+            //System.out.print("began h1:"+h.key+" \n");
             h=h.sibling;
         }
         main.setLayout(new BoxLayout(main,BoxLayout.Y_AXIS));
@@ -180,7 +155,7 @@ public class Gui {
                         nodes[i][counter]=h1;
                         JButton p2=nodetoJButton(h1);
                         Color choose=Color.GREEN;
-                        for(int mo=0;mo<nodes[i-1].length && mo<panels2[i-1].getComponentCount();mo++) {
+                        for(int mo=0;mo<nodes[i-1].length && mo<panels[i-1].getComponentCount();mo++) {
                             if(nodes[i-1][mo]!=null && nodes[i-1][mo].key==h1.parent.key){
                                 choose=panels[i-1].getComponent(mo).getBackground();
                             }
@@ -219,7 +194,7 @@ public class Gui {
         panels2[0].setLayout(new GridLayout(1,20));
         for(int p=0;p<20 && h!=null;p++) {
             nodes2[0][p] = h;
-            panels2[0].add(nodetoJButton(h));
+            panels2[0].add(nodetoJButton(h,choosecolor(p)));
             h=h.sibling;
         }
         main2.setLayout(new BoxLayout(main2,BoxLayout.Y_AXIS));
@@ -238,22 +213,16 @@ public class Gui {
                         if(counter>=nodes2[i].length){
                             System.out.println("tree too big for gui!!");
                         }
-                        //System.out.println("added "+h1.key +" to row #"+i+"(i starts at 0)");
                         nodes2[i][counter]=h1;
-
                         JButton p2=nodetoJButton(h1);
-                        //Color choose=Color.GREEN;
-                        //if(panels2[i-1].getComponentCount()>j) {
-                        //    choose = panels2[i - 1].getComponent(j).getBackground();
-                        //}
-                        /*for(int mo=0;mo<nodes2[i-1].length && mo<panels2[i-1].getComponentCount();mo++) {
+                        Color choose=Color.GREEN;
+                        for(int mo=0;mo<nodes2[i-1].length && mo<panels2[i-1].getComponentCount();mo++) {
                             if(nodes2[i-1][mo]!=null && nodes2[i-1][mo].key==h1.parent.key){
                                 choose=panels2[i-1].getComponent(mo).getBackground();
                             }
-                        }*/
-                        //p2.setBackground(choose);
+                        }
+                        p2.setBackground(choose);
                         panels2[i].add(p2);
-
                         h1=h1.sibling;
                         counter++;
                     }
@@ -293,7 +262,6 @@ public class Gui {
         return a;
     }
 
-
     private void showEventDemo(){
         //headerLabel.setText("Control in action: Button");
         nodetochange = new JTextArea("Num");
@@ -303,7 +271,7 @@ public class Gui {
             nodetochange.setText(x.head.key+"");
         }
         controlPanel.add(nodetochange);
-        String[]func={"insert","delete","update","deleteMin","print","findMin","play"};
+        String[]func={"insert","delete","update","deleteMin","print","findMin","play","printHashMap"};
         for(int i=0;i<func.length;i++){
             JButton f=new JButton(func[i]);
             f.setActionCommand(func[i]);
@@ -324,10 +292,11 @@ public class Gui {
         mainFrame.setVisible(true);
 
         if(autoplay){
-            for(int i=0;i<5;i++){
+            for(int i=0;i<numofplays;i++){
                 nextCommand();
             }
         }
+        update();
 
     }
 
@@ -354,6 +323,9 @@ public class Gui {
             }else if(command.equals("play")){
                 nextCommand();
                 //update();
+            }else if(command.equals("printHashMap")){
+                x.printHashMap();
+                //update();
             }else if(command.equals("valid")){
                 //nextCommand();
                 statusLabel.setText("is valid:"+x.isValid()+"");
@@ -362,16 +334,12 @@ public class Gui {
                 x.print();
                 //update();
             }else if(command.equals("size")){
-                if(nodetochange.getText().equals("All")){
-                    statusLabel.setText("size all:"+x.size());
-                }else{
-                    HeapNode t=x.search(Integer.parseInt(nodetochange.getText()));
-                    statusLabel.setText("size of "+t.key+" is " +x.size(t));
-
-                }
+                statusLabel.setText("size all:"+x.size());
                 //,"decrease key"}
             }else if(command.equals("arrayToHeap")){
+                copy_before();
                 arraytoheap12();
+                update();
             }else if(command.equals("minTreeRank")){
                 statusLabel.setText("minranktree: "+x.minTreeRank());
             }else if(command.equals("binaryRep")){
